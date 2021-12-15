@@ -66,7 +66,7 @@ def shortestPath(n, edges, s):
     for i in answer:
         shortest_reach.append(answer[i])
     # Returning our result
-    return shortest_reach[1:]
+    return shortest_reach[1:].sort()
 
 
 s = 1
