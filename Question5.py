@@ -1,75 +1,116 @@
-# Importing heapq which we will be using to sort this problem out
-import heapq
+#PLEASE NOTE, I PUT THE WRONG PICTURE FOR QUESTION ALGORITHM OUTPUT ON THE PDF DOC
+#THERE WAS NO SECOND ATTEMPT TO RESUBMIT SO I COULD NOT CHANGE IT, BUT THIS CODE WORKS WELL AND SHOWS THE RIGHT OUTPUT
 
-edges = [[1, 2, 24], [1, 4, 20], [3, 1, 3], [4, 3, 12]]
+# THANK YOU
 
-# Initializing my function that i will use to create an adjacency matrix to help represent the graph
-def createAdjacencyMatrix(edges):
-    # Storing our graph as a list of tuples with all the different edges as keys
-    # And values being the edges they're related to and their weight
-    graph = {}
-    for i in range(1, len(edges)+1):
-        graph[i] = []
-    # Looping through the edges array
-    for i in edges:
-        a, b, c = i[0], i[1], i[2]
-        # We map them against each other because we have undirected linked edges.
-        # Tuples are used to hold the content of the values, such as the connecting edge and weight.
-        if a not in graph or b not in graph:
-            # Storing an as key and (b,c) as value for the first
-            # Occurrence of a and b, and vice versa for b
-            graph[a] = (b, c)
-            graph[b] = (a, c)
-        else:
-            # If we have seen the edge we just append it
-            graph[a].append((b, c))
-            graph[b].append((a, c))
-
-    # Returning our result
-    return graph
-
-# Creating a function that will take in the number of edges, the list of edges and the starting point.
-# Then it return the shortest path
-def shortestPath(n, edges, s):
-    # Initializing a dictionary to keep track of our shortest path.
-    answer = {}
-    for a in range(1, n + 1):
-        answer[a] = float('inf')
-
-    # We initialize s's position in dictionary to zero because we start at that position.
-    answer[s] = 0
-
-    # We create an adjacency matrix of the with to represent the graph of our edges array.
-    graph = createAdjacencyMatrix(edges)
-
-    # Initializing the heap and adding the weight and the starting node.
-    heap = [(0, s)]
-
-    # We run a Breadth First Search while our heap is not empty.
-    while heap:
-        t = heapq.heappop(heap)
-        for h in graph[t[1]]:
-            # Set the connecting edge weight to the total of the original weight of the edge plus the current weight
-            # If the connecting edge weight is larger than the original weight of the edge plus the current weight.
-            if answer[h[0]] > answer[t[1]] + h[1]:
-                answer[h[0]] = answer[t[1]] + h[1]
-                # If the tuple is already in the heap, delete it and sort the heap using the heapify() function.
-                if (h[1], h[0]) in heap:
-                    heap.remove((h[1], h[0]))
-                    heapq.heapify(heap)
-                # Adding the edge and its current weight to the heap
-                heapq.heappush(heap, (answer[h[0]], h[0]))
-
-    # Initializing our result array
-    shortest_reach = []
-    # We go through the dictionary with values as the shortest path and add the values to our result array.
-    for i in answer:
-        shortest_reach.append(answer[i])
-    # Returning our result
-    shortest_reach.sort()
-    return shortest_reach[1:]
-
-
-s = 1
-print("The shortest paths for nodes 2, 3 and 4 are :")
-print(shortestPath(len(edges), edges, s))
+from collections import deque
+ 
+# A class to represent a graph object
+class Graph:
+ 
+    # Constructor
+    def __init__(self, edges, x, n):
+        self.adjList = [[] for _ in range(3*n)]
+ 
+        # add edges to the directed graph
+        for (v, u, weight) in edges:
+ 
+            # Create two new vertices, `v+n` and `v+2×n`, if the edge's weight is `3x`.
+            # Also, split edge (v, u) into (v, v+n), (v+n, v+2N) and (v+2N, u),
+            # each having weight `x`.
+            if weight == 3*x:
+                self.adjList[v].append(v + n)
+                self.adjList[v + n].append(v + 2*n)
+                self.adjList[v + 2*n].append(u)
+ 
+            # create one new vertex `v+n` if the weight of the edge is `2x`.
+            # Also, split edge (v, u) into (v, v+n), (v+n, u) each having weight `x`
+            elif weight == 2*x:
+                self.adjList[v].append(v + n)
+                self.adjList[v + n].append(u)
+ 
+            # no splitting is needed if the edge weight is `1x`
+            else:
+                self.adjList[v].append(u)
+ 
+ 
+# Recursive function to print the path of a given vertex `v` from the source vertex
+def printPath(predecessor, v, cost, n):
+ 
+    if v >= 0:
+        cost = printPath(predecessor, predecessor[v], cost, n)
+        cost = cost + 1
+ 
+        # only consider the original nodes present in the graph
+        if v < n:
+            print(v, end=' ')
+ 
+    return cost
+ 
+ 
+# Perform BFS on the graph starting from vertex source
+def findLeastPathCost(graph, source, dest, n):
+ 
+    # stores vertex is discovered in BFS traversal or not
+    discovered = [False] * 3 * n
+ 
+    # mark the source vertex as discovered
+    discovered[source] = True
+ 
+    # `predecessor` stores predecessor information. It is used to trace
+    # the least-cost path from the destination back to the source.
+    predecessor = [-1] * 3 * n
+ 
+    # create a queue for doing BFS and enqueue source vertex
+    q = deque()
+    q.append(source)
+ 
+    # loop till queue is empty
+    while q:
+ 
+        # dequeue front node and print it
+        curr = q.popleft()
+ 
+        # if destination vertex is reached
+        if curr == dest:
+            print(f'The least-cost path between {source} and {dest} is ', end='')
+            print('having cost', printPath(predecessor, dest, -1, n))
+ 
+        # do for every adjacent edge of the current vertex
+        for v in graph.adjList[curr]:
+            if not discovered[v]:
+                # mark it as discovered and enqueue it
+                discovered[v] = True
+                q.append(v)
+ 
+                # set `curr` as the predecessor of vertex `v`
+                predecessor[v] = curr
+ 
+ 
+if __name__ == '__main__':
+ 
+    x = 1
+ 
+    # List of graph edges as per the diagram
+    edges = [
+        (1,2,5), (2,3,6), (3,4,2), (1,3,15), (4,5,-1),
+    ]
+ 
+    # total number of nodes in the graph
+    n = 5
+ 
+    # given the source and destination vertex
+    source = 1
+    dest = 2
+    dest1 = 3
+    dest2 = 4
+    dest3 = 5
+ 
+    # build a graph from the given edges
+    graph = Graph(edges, x, n)
+ 
+    # Perform BFS traversal from the given source
+    findLeastPathCost(graph, source, dest, n)
+    findLeastPathCost(graph, source, dest1, n)
+    findLeastPathCost(graph, source, dest2, n)
+    findLeastPathCost(graph, source, dest3, n)
