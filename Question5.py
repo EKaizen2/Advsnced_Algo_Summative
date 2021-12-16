@@ -66,9 +66,10 @@ def shortestPath(n, edges, s):
     for i in answer:
         shortest_reach.append(answer[i])
     # Returning our result
-    return shortest_reach[1:].sort()
+    shortest_reach.sort()
+    return shortest_reach[1:]
 
 
 s = 1
-print("The shortest paths followed for the three nodes 2, 3 and 4 are as follows :")
+print("The shortest paths for nodes 2, 3 and 4 are :")
 print(shortestPath(len(edges), edges, s))
